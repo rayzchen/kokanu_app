@@ -40,15 +40,21 @@ class LessonScreenState extends State<LessonScreen> {
       appBar: AppBar(title: Text(widget.title)),
       body: PageView(
         controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(),
         children: [
-          Center(child: ElevatedButton(
-            onPressed: goToNextPage,
-            child: Text("Go to Question"),
-          )),
+          Transform.translate(
+            offset: Offset(0, -kToolbarHeight / 2),
+            child: Center(
+              child: ElevatedButton(
+                onPressed: goToNextPage,
+                child: Text("Go to Question"),
+              ),
+            ),
+          ),
           QuestionCard(
-            question: "Translate: Hello",
-            options: ["Hola", "Bonjour", "Kokanu", "Hello"],
-            correct: 2,
+            question: "Translate: ʜȷxʃ",
+            options: ["eat", "hello", "fruit"],
+            correct: 1,
             onNext: goToNextPage,  // You can pass a callback to move next after answering
           ),
           Center(child: Text("Well done!")),

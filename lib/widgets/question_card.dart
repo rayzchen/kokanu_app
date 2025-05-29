@@ -14,52 +14,146 @@ class QuestionCard extends StatefulWidget {
 
 class QuestionCardState extends State<QuestionCard> {
   int? selected;
+  bool checked = false;
+  bool correct = false;
 
   void _onAnswerSelected(int index) {
-    setState(() {
-      selected = index;
-    });
+    if (!checked) {
+      setState(() {
+        print(index);
+        if (selected == index) {
+          selected = null;
+        } else {
+          selected = index;
+        }
+      });
 
-    // Automatically go to next page after delay (optional)
-    Future.delayed(Duration(seconds: 1), () {
-      if (widget.onNext != null) {
-        widget.onNext!();
-      }
-    });
+      // Automatically go to next page after delay (optional)
+      // Future.delayed(Duration(seconds: 1), () {
+      //   if (widget.onNext != null) {
+      //     widget.onNext!();
+      //   }
+      // });
+    }
   }
 
   Color getButtonColor(int index) {
-    print("Selected: $selected, Index: $index");
-    if (selected == null) return Colors.blue;
-    if (index == widget.correct) return Colors.green;
-    if (index == selected) return Colors.red;
+    if (checked) {
+      if (index == widget.correct) return Colors.green;
+      if (index == selected) return Colors.red;
+    }
+    if (index == selected) return Colors.blue;
     return Colors.grey;
+  }
+
+  void submitAnswer() {
+    setState(() {
+      checked = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.all(16),
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Text(widget.question, style: TextStyle(fontSize: 20)),
-          SizedBox(height: 20),
-          ...List.generate(widget.options.length, (index) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStatePropertyAll<Color>(getButtonColor(index)),
-                  foregroundColor: WidgetStatePropertyAll<Color>(Colors.white),
+          Transform.translate(
+            offset: Offset(0, -kToolbarHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(widget.question, style: TextStyle(fontSize: 20)),
+                SizedBox(height: 20),
+                ...List.generate(widget.options.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          side: BorderSide(
+                            width: 3.0,
+                            color: getButtonColor(index)
+                          ),
+                          foregroundColor: getButtonColor(index),
+                          padding: EdgeInsets.symmetric(vertical: 10.0),
+                        ),
+                        onPressed: () => _onAnswerSelected(index),
+                        child: Text(
+                          widget.options[index],
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      )
+                    ),
+                  );
+                }),
+              ]
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              color: checked ? Theme.of(context).focusColor : null,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Visibility(
+                      visible: checked,
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.check_circle, color: Colors.green)
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Great work!",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Visibility(
+                      visible: checked,
+                      child: SizedBox(height: 10),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                          ),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Theme.of(context).primaryColor,
+                        ),
+                        onPressed: checked ? widget.onNext : submitAnswer,
+                        child: Text(checked ? "CONTINUE" : "CHECK"),
+                      ),
+                    ),
+                  ],
                 ),
-                onPressed: selected == null
-                    ? () => _onAnswerSelected(index)
-                    : null,
-                child: Text(widget.options[index]),
               ),
-            );
-          }),
+            ),
+          ),
         ],
       ),
     );
