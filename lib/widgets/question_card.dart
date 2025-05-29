@@ -20,11 +20,13 @@ class QuestionCardState extends State<QuestionCard> {
   void _onAnswerSelected(int index) {
     if (!checked) {
       setState(() {
-        print(index);
         if (selected == index) {
           selected = null;
         } else {
           selected = index;
+          if (selected == widget.correct) {
+            correct = true;
+          }
         }
       });
 
@@ -50,6 +52,16 @@ class QuestionCardState extends State<QuestionCard> {
     setState(() {
       checked = true;
     });
+  }
+
+  Color getSuccessColor() {
+    return correct ? Colors.green : Colors.red;
+  }
+
+  Color getSubmitColor() {
+    if (!checked) return Colors.green;
+    if (correct) return Colors.green;
+    return getSuccessColor();
   }
 
   @override
@@ -106,7 +118,6 @@ class QuestionCardState extends State<QuestionCard> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Visibility(
                       visible: checked,
@@ -114,15 +125,17 @@ class QuestionCardState extends State<QuestionCard> {
                         children: [
                           Padding(
                             padding: EdgeInsets.all(4),
-                            child: Icon(Icons.check_circle, color: Colors.green)
+                            child: correct
+                                ? Icon(Icons.check_circle, color: Colors.green)
+                                : Icon(Icons.cancel, color: Colors.red)
                           ),
                           Expanded(
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                "Great work!",
+                                correct ? "Great work!" : "Incorrect",
                                 style: TextStyle(
-                                  color: Colors.green,
+                                  color: getSuccessColor(),
                                   fontSize: 18,
                                 ),
                               ),
@@ -142,7 +155,7 @@ class QuestionCardState extends State<QuestionCard> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0),
                           ),
-                          backgroundColor: Colors.green,
+                          backgroundColor: getSubmitColor(),
                           foregroundColor: Theme.of(context).primaryColor,
                         ),
                         onPressed: checked ? widget.onNext : submitAnswer,
